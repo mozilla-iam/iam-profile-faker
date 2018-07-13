@@ -12,7 +12,7 @@ requirements = ['Click>=6.0', 'Faker']
 
 setup_requirements = []
 
-test_requirements = ['jsonschema']
+test_requirements = ['jsonschema', 'mock']
 
 setup(
     author="John Giannelos",
