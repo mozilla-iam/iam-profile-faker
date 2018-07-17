@@ -1,6 +1,5 @@
 import os
-from flata import Flata, Query
-from flata.storages import JSONStorage
+from tinydb import TinyDB
 
 from flask import Flask
 from flask_restful import Resource, Api
@@ -40,9 +39,8 @@ class PersistentUsers(Resource):
 
     def get(self):
         """Return all the users from the db."""
-        db_name = _load_db()
-        table = Flata(db_name, storage=JSONStorage).table('users')
-        return table.all()
+        db = TinyDB(_load_db())
+        return db.all()
 
 
 class PersistentUser(Resource):
@@ -50,16 +48,14 @@ class PersistentUser(Resource):
 
     def get(self, user_id):
         """Return a single user with id `user_id`."""
-        db_name = _load_db()
-        table = Flata(db_name, storage=JSONStorage).table('users')
-        query = table.search(Query().id == int(user_id))
-        return query
+        db = TinyDB(_load_db())
+        return db.all()[user_id]
 
 
-api.add_resource(RandomUsers, '/', '/users')
+api.add_resource(RandomUsers, '/users')
 api.add_resource(RandomUser, '/user')
 api.add_resource(PersistentUsers, '/persistent/users')
-api.add_resource(PersistentUser, '/persistent/user/<user_id>')
+api.add_resource(PersistentUser, '/persistent/user/<int:user_id>')
 
 
 if __name__ == '__main__':

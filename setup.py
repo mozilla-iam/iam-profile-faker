@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=6.0', 'Faker', 'flata']
+requirements = ['Click>=6.0', 'Faker', 'tinydb', 'flask', 'flask_restful']
 
 setup_requirements = []
 
