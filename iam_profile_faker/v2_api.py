@@ -52,11 +52,15 @@ class PersistentUser(Resource):
         return db.all()[user_id]
 
 
-api.add_resource(RandomUsers, '/users')
+api.add_resource(RandomUsers, '/', '/users')
 api.add_resource(RandomUser, '/user')
 api.add_resource(PersistentUsers, '/persistent/users')
 api.add_resource(PersistentUser, '/persistent/user/<int:user_id>')
 
 
-if __name__ == '__main__':
+def main():
     app.run(host='0.0.0.0', debug=True)
+
+
+if __name__ == '__main__':
+    main()

@@ -54,8 +54,7 @@ def populate_db(count, dbname):
 
     db = TinyDB(os.path.join(path, dbname))
     users = V2ProfileFactory().create_batch(count, export_json=False)
-    for user in users:
-        db.insert(user)
+    db.insert_multiple(users)
 
     click.echo('Added {0} profiles in database {1}.'.format(count, dbname))
 
