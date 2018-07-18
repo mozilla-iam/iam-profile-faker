@@ -3,9 +3,10 @@
 """Console script for iam_profile_faker."""
 import os
 import sys
+
 import click
-from flata import Flata
-from flata.storages import JSONStorage
+
+from tinydb import TinyDB
 
 from iam_profile_faker import V2ProfileFactory
 
@@ -43,15 +44,18 @@ def create_batch(count):
 @click.argument('dbname', default='db')
 def populate_db(count, dbname):
     """Create batch IAM profile v2 objects and insert them in the database."""
-    click.echo('Creating database {0}.json'.format(dbname))
+
     path = os.path.dirname(os.path.abspath(__file__))
+
     if not dbname.endswith('.json'):
         dbname = '{0}.json'.format(dbname)
-    db = Flata(os.path.join(path, dbname), storage=JSONStorage)
-    table = db.table('users')
 
+    click.echo('Creating database {0}'.format(dbname))
+
+    db = TinyDB(os.path.join(path, dbname))
     users = V2ProfileFactory().create_batch(count, export_json=False)
-    table.insert_multiple(users)
+    db.insert_multiple(users)
+
     click.echo('Added {0} profiles in database {1}.'.format(count, dbname))
 
 

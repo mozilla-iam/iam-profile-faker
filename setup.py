@@ -8,11 +8,10 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=6.0', 'Faker', 'flata']
-
 setup_requirements = []
-
-test_requirements = ['jsonschema', 'mock']
+base_requirements = ['Click>=6.0', 'Faker']
+api_requirements = ['tinydb', 'flask', 'flask_restful']
+test_requirements = ['jsonschema', 'mock', 'tinydb']
 
 setup(
     author="John Giannelos",
@@ -33,9 +32,13 @@ setup(
     entry_points={
         'console_scripts': [
             'iam_profile_faker=iam_profile_faker.cli:main',
+            'iam_profile_faker_api=iam_profile_faker.v2_api:main'
         ],
     },
-    install_requires=requirements,
+    install_requires=base_requirements,
+    extras_require={
+        'api': api_requirements
+    },
     license="Apache Software License 2.0",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
