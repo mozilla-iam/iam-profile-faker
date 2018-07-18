@@ -11,7 +11,7 @@ with open('HISTORY.rst') as history_file:
 setup_requirements = []
 base_requirements = ['Click>=6.0', 'Faker']
 api_requirements = ['tinydb', 'flask', 'flask_restful']
-test_requirements = ['jsonschema', 'mock', 'tinydb']
+test_requirements = ['jsonschema', 'mock', 'tinydb', 'requests']
 
 setup(
     author="John Giannelos",

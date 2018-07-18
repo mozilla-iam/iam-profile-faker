@@ -3,10 +3,13 @@
 
 """Tests for `iam_profile_faker` package."""
 
-
 import mock
 import unittest
+
+import requests
+
 from click.testing import CliRunner
+from jsonschema import validate
 
 from iam_profile_faker import cli
 from iam_profile_faker.factory import V2ProfileFactory
@@ -47,3 +50,43 @@ class TestIAMProfileFaker(unittest.TestCase):
         create_result = runner.invoke(cli.main, ['create_batch', '--count', 2])
         assert create_result.exit_code == 0
         assert create_result.output == '[{"foo": "bar"}, {"foo": "bar"}]\n'
+
+
+class TestE2EProfileFaker(unittest.TestCase):
+    """E2E tests for `iam_profile_faker` package."""
+
+    def setUp(self):
+        schema_url = 'https://raw.githubusercontent.com/mozilla-iam/cis/profilev2/docs/profile_data/profile.schema'  # noqa
+        try:
+            self.schema = requests.get(schema_url).json()
+        except requests.exceptions.ConnectionError:
+            self.schema = None
+
+    def test_000_validate_factory_create(self):
+        """Validate single fake object created"""
+
+        if not self.schema:
+            self.skipTest('Failed to fetch json schema.')
+
+        factory = V2ProfileFactory()
+        output = factory.create()
+
+        try:
+            validate(output, self.schema)
+        except:
+            self.fail('Validation failed!')
+
+    def test_001_validate_factory_create_batch(self):
+        """Validate multiple fake objects created"""
+
+        if not self.schema:
+            self.skipTest('Failed to fetch json schema.')
+
+        factory = V2ProfileFactory()
+        output = factory.create_batch(10)
+
+        for obj in output:
+            try:
+                validate(obj, self.schema)
+            except:
+                self.fail('Validation failed!')
