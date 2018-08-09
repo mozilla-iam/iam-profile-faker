@@ -7,7 +7,7 @@ from flask_restful import Resource, Api
 from graphene import Schema
 
 from iam_profile_faker import V2ProfileFactory
-from iam_profile_faker.schema import Query
+from iam_profile_faker.schema import Query, ProfileMutations
 
 
 app = Flask(__name__)
@@ -58,7 +58,7 @@ class PersistentUser(Resource):
 
 view_func = GraphQLView.as_view(
     'graphql',
-    schema=Schema(query=Query),
+    schema=Schema(query=Query, mutation=ProfileMutations),
     graphiql=True
 )
 
