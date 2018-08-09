@@ -3,6 +3,8 @@ import graphene
 import requests
 from aniso8601 import parse_datetime
 
+from tinydb import TinyDB, Query as tinydb_query
+
 
 # Helper functions
 def parse_datetime_iso8601(datetime):
@@ -252,7 +254,8 @@ class CoreProfile(graphene.ObjectType):
 class Query(graphene.ObjectType):
     """GraphQL Query class for the V2 Profiles."""
 
-    profiles = graphene.List(CoreProfile, userId=graphene.String())
+    profiles = graphene.List(CoreProfile)
+    profile = graphene.Field(CoreProfile, userId=graphene.String(required=True))
 
     def resolve_profiles(self, info, **kwargs):
         """GraphQL resolver for the profiles attribute."""
@@ -260,12 +263,62 @@ class Query(graphene.ObjectType):
         if not is_json(resp):
             resp = json.dumps(resp)
 
+        return json2obj(resp)
+
+    def resolve_profile(self, info, **kwargs):
+        """GraphQL resolver for a single profile."""
+
+        resp = requests.get('http://localhost:5000/persistent/users').json()
+
+        if not is_json(resp):
+            resp = json.dumps(resp)
+
         data = json2obj(resp)
-        # Query based on user_id
         user_id = kwargs.get('userId')
-        if user_id:
-            for profile in data:
-                if profile['user_id']['value'] == user_id:
-                    return [profile]
-            return None
-        return data
+        for profile in data:
+            if profile['user_id']['value'] == user_id:
+                return profile
+        return None
+
+
+# Mutations section
+class SimpleInputField(graphene.InputObjectType):
+    """Simple Input Field that accepts a string argument."""
+    value = graphene.String(required=False)
+
+
+class BasicProfileInput(graphene.InputObjectType):
+    """Basic Profile Mutation for the v2 profile schema."""
+    first_name = graphene.InputField(SimpleInputField)
+    last_name = graphene.InputField(SimpleInputField)
+    primary_email = graphene.InputField(SimpleInputField)
+
+
+class EditBasicProfile(graphene.Mutation):
+
+    class Arguments:
+        basic_profile_data = BasicProfileInput(required=False)
+        # Get the user_id for editing
+        user_id = graphene.String(required=True)
+
+    errors = graphene.List(graphene.String)
+    updated_profile = graphene.Field(lambda: CoreProfile)
+
+    @staticmethod
+    def mutate(root, info, user_id, basic_profile_data=None):
+        """Update the Basic information of a Profile."""
+
+        db = TinyDB('iam_profile_faker/db.json')
+        profile = db.get(tinydb_query().user_id.value == user_id)
+        if basic_profile_data:
+            for k, v in basic_profile_data.items():
+                profile[k].update(v)
+            db.update(profile)
+            return EditBasicProfile(
+                updated_profile=json2obj(json.dumps(profile)))
+        return None
+
+
+class ProfileMutations(graphene.ObjectType):
+    """Edit Profiles."""
+    edit_basic_profile = EditBasicProfile.Field()
