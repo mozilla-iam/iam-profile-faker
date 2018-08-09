@@ -2,6 +2,7 @@ import os
 from tinydb import TinyDB
 
 from flask import Flask
+from flask_cors import CORS
 from flask_graphql import GraphQLView
 from flask_restful import Resource, Api
 from graphene import Schema
@@ -12,6 +13,7 @@ from iam_profile_faker.schema import Query
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 
 # Helper functions
