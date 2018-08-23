@@ -141,15 +141,17 @@ class IAMFaker(object):
 
         return values
 
-    def access_level(self):
-        """Profile v2 access level faker."""
+    def access_information(self):
+        """Profile v2 access information faker."""
         values = {}
-        for publisher in ['ldap', 'mozilliansorg', 'hris', 'access_provider']:
+        for publisher in ['ldap', 'mozilliansorg', 'access_provider']:
             v = {}
             for _ in range(random.randint(1, 5)):
                 v[self.fake.slug()] = self.fake.pybool()
 
             values[publisher] = wrap_metadata_signature(self, v)
+
+        values['hris'] = wrap_metadata_signature(self, self.hris())
 
         return values
 
@@ -195,6 +197,59 @@ class IAMFaker(object):
 
         return values
 
+    def hris(self):
+        """Profile v2 HRIS faker"""
+
+        def get_management_level():
+            level = random.choice(['Junior', 'Senion', 'Staff'])
+            return random.choice(['{} Manager'.format(level), ''])
+
+        def get_public_email_address():
+            value = []
+            for _ in range(random.randint(0, 5)):
+                email = {
+                    'PublicEmailAddress': self.fake.email()
+                }
+                value.append(email)
+
+            return value
+
+        values = {
+            'LastName': self.fake.last_name(),
+            'Preferred_Name': self.fake.name(),
+            'PreferredFirstName': self.fake.first_name(),
+            'LegalFirstName': self.fake.first_name(),
+            'EmployeeID': self.fake.pyint(),
+            'businessTitle': self.fake.job(),
+            'IsManager': self.fake.pybool(),
+            'isDirectorOrAbove': self.fake.pybool(),
+            'Management_Level': get_management_level(),
+            'HireDate': self.fake.date(pattern="%Y-%m-%d", end_datetime=None),
+            'CurrentlyActive': random.choice(['0', '1']),
+            'Entity': self.fake.company(),
+            'Team': '{} team'.format(self.fake.color_name()),
+            'Cost_Center': '{} - {}'.format(self.fake.pyint(), self.fake.job()),
+            'WorkerType': random.choice(['Employee', 'Seasonal', 'Geocontractor']),
+            'LocationDescription': random.choice([
+                'Berlin', 'Paris', 'London', 'Toronto', 'Mountain View',
+                'San Francisco', 'Vancouver', 'Portland', 'Beijing', 'Taipei'
+            ]),
+            'Time_Zone': self.fake.timezone(),
+            'LocationCity': self.fake.city(),
+            'LocationState': self.fake.state(),
+            'LocationCountryFull': self.fake.country(),
+            'LocationCountryISO2': self.fake.country_code(),
+            'WorkersManager': 'Unknown',
+            'WorkersManagersEmployeeID': self.fake.pyint(),
+            'Worker_s_Manager_s_Email_Address': self.fake.email(),
+            'PrimaryWorkEmail': self.fake.email(),
+            'WPRDeskNumber': self.fake.pyint(),
+            'EgenciaPOSCountry': self.fake.country_code(),
+            "PublicEmailAddresses": get_public_email_address()
+        }
+
+        return values
+
     def create(self):
         """Method to generate fake profile v2 objects."""
         login_method = self.login_method()
@@ -215,7 +270,7 @@ class IAMFaker(object):
             'identities': self.identities(),
             'ssh_public_keys': self.ssh_public_keys(),
             'pgp_public_keys': self.pgp_public_keys(),
-            'access_information': self.access_level(),
+            'access_information': self.access_information(),
             'fun_title': wrap_metadata_signature(self, self.fake.sentence()),
             'description': wrap_metadata_signature(self, self.fake.paragraph()),
             'location_preference': wrap_metadata_signature(self, self.fake.country()),
