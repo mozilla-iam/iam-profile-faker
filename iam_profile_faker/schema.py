@@ -310,7 +310,7 @@ class EditBasicProfile(graphene.Mutation):
 
         db = TinyDB('iam_profile_faker/db.json')
         profile = db.get(tinydb_query().user_id.value == user_id)
-        if basic_profile_data:
+        if basic_profile_data and profile:
             for k, v in basic_profile_data.items():
                 profile[k].update(v)
             db.update(profile)
