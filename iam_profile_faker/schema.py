@@ -207,12 +207,61 @@ class StandardAttributeValues(BaseObjectType):
         return None
 
 
+class PublicEmailAddresses(graphene.ObjectType):
+    """HRIS schema for public email addresses."""
+    PublicEmailAddress = graphene.String()
+
+
+class HRISAttributes(graphene.ObjectType):
+    """V2 Schema HRIS object for Graphene.
+
+    This is a well-known lists of HRIS attributes.
+    """
+    Last_Name = graphene.String(required=True)
+    Preferred_Name = graphene.String(required=True)
+    PreferredFirstName = graphene.String(required=True)
+    LegalFirstName = graphene.String(required=True)
+    EmployeeID = graphene.String(required=True)
+    businessTitle = graphene.String(required=True)
+    IsManager = graphene.Boolean(required=True)
+    isDirectorOrAbove = graphene.Boolean(required=True)
+    Management_Level = graphene.String(required=True)
+    HireDate = graphene.DateTime(required=True)
+    CurrentlyActive = graphene.Boolean(required=True)
+    Entity = graphene.String(required=True)
+    Team = graphene.String(required=True)
+    Cost_Center = graphene.String(required=True)
+    WorkerType = graphene.String(required=True)
+    LocationDescription = graphene.String()
+    Time_Zone = graphene.String(required=True)
+    LocationCity = graphene.String(required=True)
+    LocationState = graphene.String(required=True)
+    LocationCountryFull = graphene.String(required=True)
+    LocationCountryISO2 = graphene.String(required=True)
+    WorkersManager = graphene.String()
+    WorkersManagerEmployeeID = graphene.String(required=True)
+    Worker_s_Manager_s_Email_Address = graphene.String(required=True)
+    PrimaryWorkEmail = graphene.String(required=True)
+    WPRDeskNumber = graphene.String()
+    EgenciaPOSCountry = graphene.String(required=True)
+    PublicEmailAddresses = graphene.List(PublicEmailAddresses)
+
+
+class HRISAttributeValues(BaseObjectType):
+    """V2 Schema StandardAttributeValues object for Graphene."""
+
+    values = graphene.Field(HRISAttributes)
+
+    def resolve_values(self, info, **kwargs):
+        return self.get('values')
+
+
 class AccessInformation(graphene.ObjectType):
     """V2 Schema AccessInformation object for Graphene."""
 
     ldap = graphene.Field(StandardAttributeValues)
     mozilliansorg = graphene.Field(StandardAttributeValues)
-    hris = graphene.Field(StandardAttributeValues)
+    hris = graphene.Field(HRISAttributeValues)
     access_provider = graphene.Field(StandardAttributeValues)
 
 
