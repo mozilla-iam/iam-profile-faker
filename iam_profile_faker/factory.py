@@ -1,5 +1,6 @@
 import json
 import random
+import itertools
 
 from faker import Faker
 
@@ -28,9 +29,18 @@ def decorate_metadata_signature(fun):
     return wrapper
 
 
+def create_random_hierarchy_iter():
+    """Generate hierarchy iterator with a random pattern pattern"""
+    def gen():
+        for i in itertools.count():
+            yield (i + 1, random.randint(0, i))
+    return gen()
+
+
 class IAMFaker(object):
-    def __init__(self, locale=None):
+    def __init__(self, locale=None, hierarchy=None):
         self.fake = Faker(locale)
+        self.hierarchy = hierarchy
 
     def schema(self):
         """Profile v2 schema faker."""
@@ -214,12 +224,16 @@ class IAMFaker(object):
 
             return value
 
+        employee_id, manager_id = (next(self.hierarchy)
+                                   if self.hierarchy
+                                   else (self.fake.pyint(), self.fake.pyint()))
+
         values = {
             'LastName': self.fake.last_name(),
             'Preferred_Name': self.fake.name(),
             'PreferredFirstName': self.fake.first_name(),
             'LegalFirstName': self.fake.first_name(),
-            'EmployeeID': self.fake.pyint(),
+            'EmployeeID': employee_id,
             'businessTitle': self.fake.job(),
             'IsManager': self.fake.pybool(),
             'isDirectorOrAbove': self.fake.pybool(),
@@ -240,7 +254,7 @@ class IAMFaker(object):
             'LocationCountryFull': self.fake.country(),
             'LocationCountryISO2': self.fake.country_code(),
             'WorkersManager': 'Unknown',
-            'WorkersManagersEmployeeID': self.fake.pyint(),
+            'WorkersManagersEmployeeID': manager_id,
             'Worker_s_Manager_s_Email_Address': self.fake.email(),
             'PrimaryWorkEmail': self.fake.email(),
             'WPRDeskNumber': self.fake.pyint(),
@@ -300,7 +314,8 @@ class V2ProfileFactory(object):
 
     def create_batch(self, count, export_json=False):
         """Generate batch fake profile v2 objects."""
-        faker = IAMFaker()
+        hierarchy = create_random_hierarchy_iter()
+        faker = IAMFaker(hierarchy=hierarchy)
         batch = []
         for _ in range(count):
             obj = faker.create()
