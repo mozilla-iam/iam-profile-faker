@@ -30,7 +30,7 @@ def decorate_metadata_signature(fun):
 
 
 def create_random_hierarchy_iter():
-    """Generate hierarchy iterator with a random pattern pattern"""
+    """Generate hierarchy iterator with a random pattern"""
     def gen():
         for i in itertools.count():
             yield (i + 1, random.randint(0, i))
