@@ -220,10 +220,7 @@ class IAMFaker(object):
         def get_public_email_address():
             value = []
             for _ in range(random.randint(0, 5)):
-                email = {
-                    'PublicEmailAddress': self.fake.email()
-                }
-                value.append(email)
+                value.append(self.fake.email())
 
             return value
 
