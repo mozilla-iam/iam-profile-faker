@@ -81,10 +81,9 @@ class Classification(graphene.Enum):
     """V2 Schema Classification object for Graphene."""
 
     MOZILLA_CONFIDENTIAL = 'MOZILLA CONFIDENTIAL'
-    STAFF_ONLY = 'STAFF ONLY'
-    NDA = 'NDA'
-    REGISTERED = 'REGISTERED'
     PUBLIC = 'PUBLIC'
+    INDIVIDUAL_CONFIDENTIAL = 'INDIVIDUAL CONFIDENTIAL'
+    STAFF_ONLY = 'WORKGROUP CONFIDENTIAL: STAFF ONLY'
 
 
 class PublisherAuthority(graphene.Enum):
@@ -130,32 +129,32 @@ class Metadata(graphene.ObjectType):
         return parse_datetime_iso8601(self.get('created'))
 
 
-class StandardAttributeDatetime(graphene.ObjectType):
+class BaseObjectType(graphene.ObjectType):
+    """V2 Schema Base object object for Graphene."""
+    signature = graphene.Field(Signature)
+    metadata = graphene.Field(Metadata)
+
+
+class StandardAttributeDatetime(BaseObjectType):
     """V2 Schema StandardAttributeDatetime object for Graphene."""
 
     value = graphene.DateTime()
-    signature = graphene.Field(Signature)
-    metadata = graphene.Field(Metadata)
 
     def resolve_value(self, info, **kwargs):
         """Resolver to return a datetime object."""
         return parse_datetime_iso8601(self.get('value'))
 
 
-class StandardAttributeBoolean(graphene.ObjectType):
+class StandardAttributeBoolean(BaseObjectType):
     """V2 Schema StandardAttributeBoolean object for Graphene."""
 
     value = graphene.Boolean()
-    signature = graphene.Field(Signature)
-    metadata = graphene.Field(Metadata)
 
 
-class StandardAttributeString(graphene.ObjectType):
+class StandardAttributeString(BaseObjectType):
     """V2 Schema StandardAttributeString object for Graphene."""
 
     value = graphene.String()
-    signature = graphene.Field(Signature)
-    metadata = graphene.Field(Metadata)
 
 
 class IdentitiesValues(graphene.ObjectType):
@@ -184,23 +183,19 @@ class IdentitiesValues(graphene.ObjectType):
         return self.get('google-oauth2')
 
 
-class Identities(graphene.ObjectType):
+class Identities(BaseObjectType):
     """V2 Schema Identities object for Graphene."""
 
     values = graphene.Field(IdentitiesValues)
-    signature = graphene.Field(Signature)
-    metadata = graphene.Field(Metadata)
 
     def resolve_values(self, info, **kwargs):
         return self.get('values')
 
 
-class StandardAttributeValues(graphene.ObjectType):
+class StandardAttributeValues(BaseObjectType):
     """V2 Schema StandardAttributeValues object for Graphene."""
 
     values = graphene.List(graphene.String)
-    metadata = graphene.Field(Metadata)
-    signature = graphene.Field(Signature)
 
     def resolve_values(self, info, **kwargs):
         """Custom resolver for the list of values."""
