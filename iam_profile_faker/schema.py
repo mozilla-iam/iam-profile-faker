@@ -209,7 +209,7 @@ class StandardAttributeValues(BaseObjectType):
 
 class PublicEmailAddresses(graphene.ObjectType):
     """HRIS schema for public email addresses."""
-    PublicEmailAddress = graphene.String()
+    PublicEmailAddress = graphene.String(name='publicEmailAddress')
 
 
 class HRISAttributes(graphene.ObjectType):
@@ -217,34 +217,35 @@ class HRISAttributes(graphene.ObjectType):
 
     This is a well-known lists of HRIS attributes.
     """
-    Last_Name = graphene.String(required=True)
-    Preferred_Name = graphene.String(required=True)
-    PreferredFirstName = graphene.String(required=True)
-    LegalFirstName = graphene.String(required=True)
-    EmployeeID = graphene.String(required=True)
+    Last_Name = graphene.String(required=True, name='lastName')
+    Preferred_Name = graphene.String(required=True, name='preferredName')
+    PreferredFirstName = graphene.String(required=True, name='preferredFirstName')
+    LegalFirstName = graphene.String(required=True, name='legalFirstName')
+    EmployeeID = graphene.String(required=True, name='employeeId')
     businessTitle = graphene.String(required=True)
-    IsManager = graphene.Boolean(required=True)
+    IsManager = graphene.Boolean(required=True, name='isManager')
     isDirectorOrAbove = graphene.Boolean(required=True)
-    Management_Level = graphene.String(required=True)
-    HireDate = graphene.DateTime(required=True)
-    CurrentlyActive = graphene.Boolean(required=True)
-    Entity = graphene.String(required=True)
-    Team = graphene.String(required=True)
-    Cost_Center = graphene.String(required=True)
-    WorkerType = graphene.String(required=True)
-    LocationDescription = graphene.String()
-    Time_Zone = graphene.String(required=True)
-    LocationCity = graphene.String(required=True)
-    LocationState = graphene.String(required=True)
-    LocationCountryFull = graphene.String(required=True)
-    LocationCountryISO2 = graphene.String(required=True)
-    WorkersManager = graphene.String()
-    WorkersManagerEmployeeID = graphene.String(required=True)
-    Worker_s_Manager_s_Email_Address = graphene.String(required=True)
-    PrimaryWorkEmail = graphene.String(required=True)
-    WPRDeskNumber = graphene.String()
-    EgenciaPOSCountry = graphene.String(required=True)
-    PublicEmailAddresses = graphene.List(PublicEmailAddresses)
+    Management_Level = graphene.String(required=True, name='managementLevel')
+    HireDate = graphene.DateTime(required=True, name='hireDate')
+    CurrentlyActive = graphene.Boolean(required=True, name='currentlyActive')
+    Entity = graphene.String(required=True, name='entity')
+    Team = graphene.String(required=True, name='team')
+    Cost_Center = graphene.String(required=True, name='costCenter')
+    WorkerType = graphene.String(required=True, name='workerType')
+    LocationDescription = graphene.String(name='locationDescription')
+    Time_Zone = graphene.String(required=True, name='timeZone')
+    LocationCity = graphene.String(required=True, name='locationCity')
+    LocationState = graphene.String(required=True, name='locationState')
+    LocationCountryFull = graphene.String(required=True, name='locationCountryFull')
+    LocationCountryISO2 = graphene.String(required=True, name='locationCountryIso2')
+    WorkersManager = graphene.String(name='workersManager')
+    WorkersManagerEmployeeID = graphene.String(required=True, name='workersManagerEmployeeId')
+    Worker_s_Manager_s_Email_Address = graphene.String(required=True,
+                                                       name='workersManagersEmailAddress')
+    PrimaryWorkEmail = graphene.String(required=True, name='primaryWorkEmail')
+    WPRDeskNumber = graphene.String(name='wprDeskNumber')
+    EgenciaPOSCountry = graphene.String(required=True, name='egenciaPosCountry')
+    PublicEmailAddresses = graphene.List(PublicEmailAddresses, name='publicEmailAddresses')
 
 
 class HRISAttributeValues(BaseObjectType):
