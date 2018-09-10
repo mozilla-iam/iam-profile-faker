@@ -55,7 +55,11 @@ class PersistentUser(Resource):
     def get(self, user_id):
         """Return a single user with id `user_id`."""
         db = TinyDB(_load_db())
-        return db.all()[user_id]
+        profiles = db.all()
+        for profile in profiles:
+            if profile["user_id"]["value"] == user_id:
+                return profile
+        return None
 
 
 view_func = GraphQLView.as_view(
@@ -68,7 +72,7 @@ view_func = GraphQLView.as_view(
 api.add_resource(RandomUsers, '/', '/users')
 api.add_resource(RandomUser, '/user')
 api.add_resource(PersistentUsers, '/persistent/users')
-api.add_resource(PersistentUser, '/persistent/user/<int:user_id>')
+api.add_resource(PersistentUser, '/persistent/user/<string:user_id>')
 app.add_url_rule('/graphql', view_func=view_func)
 
 
