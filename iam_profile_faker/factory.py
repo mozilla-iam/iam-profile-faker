@@ -157,7 +157,10 @@ class IAMFaker(object):
         for publisher in ['ldap', 'mozilliansorg', 'access_provider']:
             v = {}
             for _ in range(random.randint(1, 5)):
-                v[self.fake.slug()] = self.fake.pybool()
+                if publisher == 'mozilliansorg':
+                    v[self.fake.slug()] = None
+                else:
+                    v[self.fake.slug()] = self.fake.pybool()
 
             values[publisher] = wrap_metadata_signature(self, v)
 
