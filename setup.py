@@ -9,8 +9,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 setup_requirements = []
-base_requirements = ['Click>=6.0', 'Faker']
-api_requirements = ['tinydb', 'flask', 'flask_restful', 'flask-graphql', 'graphene', 'requests',
+base_requirements = ['Click>=6.0', 'Faker', 'tinydb']
+api_requirements = ['flask', 'flask_restful', 'flask-graphql', 'graphene', 'requests',
                     'ipdb', 'aniso8601', 'flask-cors']
 test_requirements = ['jsonschema', 'mock', 'tinydb', 'requests']
 
