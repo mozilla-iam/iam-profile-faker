@@ -1,9 +1,13 @@
 import json
 import graphene
+import os
 import requests
 from aniso8601 import parse_datetime
 
 from tinydb import TinyDB, Query as tinydb_query
+
+PERSON_API_URL = os.getenv("PERSON_API_URL", "http://localhost:5000/persistent/user/")
+PROFILE_DUMP_URL = os.getenv("PROFILE_DUMP_URL", "http://localhost:5000/persistent/users")
 
 
 # Helper functions
@@ -303,7 +307,7 @@ class Query(graphene.ObjectType):
 
     def resolve_profiles(self, info, **kwargs):
         """GraphQL resolver for the profiles attribute."""
-        resp = requests.get('http://localhost:5000/persistent/users').json()
+        resp = requests.get(PROFILE_DUMP_URL).json()
         if not is_json(resp):
             resp = json.dumps(resp)
 
@@ -312,17 +316,13 @@ class Query(graphene.ObjectType):
     def resolve_profile(self, info, **kwargs):
         """GraphQL resolver for a single profile."""
 
-        resp = requests.get('http://localhost:5000/persistent/users').json()
+        user_id = kwargs.get('userId')
+        resp = requests.get(PERSON_API_URL + user_id).json()
 
         if not is_json(resp):
             resp = json.dumps(resp)
 
-        data = json2obj(resp)
-        user_id = kwargs.get('userId')
-        for profile in data:
-            if profile['user_id']['value'] == user_id:
-                return profile
-        return None
+        return json2obj(resp)
 
 
 # Mutations section
