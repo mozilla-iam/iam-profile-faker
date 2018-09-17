@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-profile-faker-deployment
+  namespace: dino-park
+  labels:
+    app: iam-profile-faker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam-profile-faker
+  template:
+    metadata:
+      labels:
+        app: iam-profile-faker
+    spec:
+      containers:
+        - name: iam-profile-faker
+          image: mozillaparsys/iam-profile-faker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
