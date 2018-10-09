@@ -47,7 +47,7 @@ class TestIAMProfileFaker(unittest.TestCase):
         """Test create cli."""
         runner = CliRunner()
         mock_create.return_value = {'foo': 'bar'}
-        create_result = runner.invoke(cli.main, ['create_batch', '--count', 2])
+        create_result = runner.invoke(cli.main, ['create-batch', '--count', 2])
         assert create_result.exit_code == 0
         assert create_result.output == '[{"foo": "bar"}, {"foo": "bar"}]\n'
 

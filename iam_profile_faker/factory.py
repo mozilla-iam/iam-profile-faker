@@ -1,6 +1,6 @@
+import itertools
 import json
 import random
-import itertools
 
 from faker import Faker
 
@@ -55,9 +55,6 @@ class IAMFaker(object):
             'PUBLIC',
             'INDIVIDUAL CONFIDENTIAL'
         ]
-        publisher_authority = [
-            'access_provider', 'ldap', 'hris', 'cis', 'mozilliansorg'
-        ]
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
@@ -65,8 +62,7 @@ class IAMFaker(object):
             'classification': random.choice(classifications),
             'last_modified': last_modified.isoformat(),
             'created': created.isoformat(),
-            'publisher_authority': random.choice(publisher_authority),
-            'verified': self.fake.pybool()
+            'verified': self.fake.pybool(),
         }
 
     def signature(self):
@@ -75,8 +71,10 @@ class IAMFaker(object):
         def _gen_signature():
             return {
                 'alg': 'RS256',
-                'typ': 'JWT',
-                'value': '{}.{}.{}'.format(self.fake.pystr(), self.fake.pystr(), self.fake.pystr())
+                'typ': 'JWS',
+                'value': '{}.{}.{}'.format(self.fake.pystr(), self.fake.pystr(),
+                                           self.fake.pystr()),
+                'name': random.choice(['access_provider', 'ldap', 'hris', 'cis', 'mozilliansorg'])
             }
 
         return {
@@ -229,37 +227,37 @@ class IAMFaker(object):
                                    else (self.fake.pyint(), self.fake.pyint()))
 
         values = {
-            'last_name': self.fake.last_name(),
-            'preferred_name': self.fake.name(),
-            'preferred_first_name': self.fake.first_name(),
-            'legal_first_name': self.fake.first_name(),
-            'employee_id': self.fake.pyint(),
-            'business_title': self.fake.job(),
-            'is_manager': self.fake.pybool(),
-            'is_director_or_above': self.fake.pybool(),
-            'management_level': get_management_level(),
-            'hire_date': self.fake.date(pattern="%Y-%m-%d", end_datetime=None),
-            'currently_active': random.choice(['0', '1']),
-            'entity': self.fake.company(),
-            'team': '{} team'.format(self.fake.color_name()),
-            'cost_center': '{} - {}'.format(self.fake.pyint(), self.fake.job()),
-            'worker_type': random.choice(['Employee', 'Seasonal', 'Geocontractor']),
-            'location_description': random.choice([
+            'LastName': self.fake.last_name(),
+            'Preferred_Name': self.fake.name(),
+            'PreferredFirstName': self.fake.first_name(),
+            'LegalFirstName': self.fake.first_name(),
+            'EmployeeID': employee_id,
+            'businessTitle': self.fake.job(),
+            'IsManager': self.fake.pybool(),
+            'isDirectorOrAbove': self.fake.pybool(),
+            'Management_Level': get_management_level(),
+            'HireDate': self.fake.date(pattern="%Y-%m-%d", end_datetime=None),
+            'CurrentlyActive': random.choice(['0', '1']),
+            'Entity': self.fake.company(),
+            'Team': '{} team'.format(self.fake.color_name()),
+            'Cost_Center': '{} - {}'.format(self.fake.pyint(), self.fake.job()),
+            'WorkerType': random.choice(['Employee', 'Seasonal', 'Geocontractor']),
+            'Location_Description': random.choice([
                 'Berlin', 'Paris', 'London', 'Toronto', 'Mountain View',
                 'San Francisco', 'Vancouver', 'Portland', 'Beijing', 'Taipei'
             ]),
-            'time_zone': self.fake.timezone(),
-            'location_city': self.fake.city(),
-            'location_state': self.fake.state(),
-            'location_country_full': self.fake.country(),
-            'location_country_iso2': self.fake.country_code(),
-            'workers_manager': 'unknown',
-            'workers_managers_employee_id': self.fake.pyint(),
-            'worker_s_manager_s_email_address': self.fake.email(),
+            'Time_Zone': self.fake.timezone(),
+            'LocationCity': self.fake.city(),
+            'LocationState': self.fake.state(),
+            'LocationCountryFull': self.fake.country(),
+            'LocationCountryISO2': self.fake.country_code(),
+            'WorkersManager': 'unknown',
+            'WorkersManagersEmployeeID': manager_id,
+            'Worker_s_Manager_s_Email_Address': self.fake.email(),
             'primary_work_email': self.fake.email(),
-            'wpr_desk_number': self.fake.pyint(),
-            'egencia_pos_country': self.fake.country_code(),
-            "public_email_addresses": get_public_email_address()
+            'WPRDeskNumber': self.fake.pyint(),
+            'EgenciaPOSCountry': self.fake.country_code(),
+            'PublicEmailAddresses': get_public_email_address()
         }
 
         return values
