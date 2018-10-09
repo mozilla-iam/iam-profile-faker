@@ -1,6 +1,6 @@
+import itertools
 import json
 import random
-import itertools
 
 from faker import Faker
 
@@ -55,9 +55,6 @@ class IAMFaker(object):
             'PUBLIC',
             'INDIVIDUAL CONFIDENTIAL'
         ]
-        publisher_authority = [
-            'access_provider', 'ldap', 'hris', 'cis', 'mozilliansorg'
-        ]
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
@@ -65,8 +62,7 @@ class IAMFaker(object):
             'classification': random.choice(classifications),
             'last_modified': last_modified.isoformat(),
             'created': created.isoformat(),
-            'publisher_authority': random.choice(publisher_authority),
-            'verified': self.fake.pybool()
+            'verified': self.fake.pybool(),
         }
 
     def signature(self):
@@ -75,8 +71,10 @@ class IAMFaker(object):
         def _gen_signature():
             return {
                 'alg': 'RS256',
-                'typ': 'JWT',
-                'value': '{}.{}.{}'.format(self.fake.pystr(), self.fake.pystr(), self.fake.pystr())
+                'typ': 'JWS',
+                'value': '{}.{}.{}'.format(self.fake.pystr(), self.fake.pystr(),
+                                           self.fake.pystr()),
+                'name': random.choice(['access_provider', 'ldap', 'hris', 'cis', 'mozilliansorg'])
             }
 
         return {

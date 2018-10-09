@@ -106,6 +106,7 @@ class Publisher(graphene.ObjectType):
     alg = graphene.Field(Alg)
     typ = graphene.Field(Typ)
     value = graphene.String()
+    name = graphene.Field(PublisherAuthority)
 
 
 class Signature(graphene.ObjectType):
@@ -121,7 +122,6 @@ class Metadata(graphene.ObjectType):
     classification = graphene.Field(Classification)
     last_modified = graphene.DateTime()
     created = graphene.DateTime()
-    publisher_authority = graphene.Field(PublisherAuthority)
     verified = graphene.Boolean()
 
     def resolve_last_modified(self, info, **kwargs):
