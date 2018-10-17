@@ -55,11 +55,20 @@ class IAMFaker(object):
             'PUBLIC',
             'INDIVIDUAL CONFIDENTIAL'
         ]
+        visibility = [
+            'public',
+            'authenticated',
+            'vouched',
+            'ndad',
+            'staff',
+            'private'
+        ]
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
         return {
             'classification': random.choice(classifications),
+            'visibility': random.choice(visibility),
             'last_modified': last_modified.isoformat(),
             'created': created.isoformat(),
             'verified': self.fake.pybool(),
