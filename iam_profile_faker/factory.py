@@ -42,6 +42,13 @@ class IAMFaker(object):
         self.fake = Faker(locale)
         self.hierarchy = hierarchy
 
+    def get_public_email_address(self):
+        value = []
+        for _ in range(random.randint(0, 5)):
+            value.append(self.fake.email())
+
+        return value
+
     def schema(self):
         """Profile v2 schema faker."""
         return 'https://person-api.sso.mozilla.com/schema/v2/profile'
@@ -221,15 +228,8 @@ class IAMFaker(object):
         """Profile v2 HRIS faker"""
 
         def get_management_level():
-            level = random.choice(['Junior', 'Senion', 'Staff'])
+            level = random.choice(['Junior', 'Senior', 'Staff'])
             return random.choice(['{} Manager'.format(level), ''])
-
-        def get_public_email_address():
-            value = []
-            for _ in range(random.randint(0, 5)):
-                value.append(self.fake.email())
-
-            return value
 
         employee_id, manager_id = (next(self.hierarchy)
                                    if self.hierarchy
@@ -266,7 +266,7 @@ class IAMFaker(object):
             'primary_work_email': self.fake.email(),
             'WPRDeskNumber': self.fake.pyint(),
             'EgenciaPOSCountry': self.fake.country_code(),
-            'PublicEmailAddresses': get_public_email_address()
+            'PublicEmailAddresses': self.get_public_email_address()
         }
 
         return values
@@ -276,6 +276,8 @@ class IAMFaker(object):
         login_method = self.login_method()
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
+
+        employee_id = (next(self.hierarchy) if self.hierarchy else self.fake.pyint())
 
         obj = {
             'schema': self.schema(),
@@ -303,7 +305,24 @@ class IAMFaker(object):
             'picture': wrap_metadata_signature(self, self.fake.image_url()),
             'uris': self.uris(),
             'phone_numbers': self.phone_numbers(),
-            'alternative_name': wrap_metadata_signature(self, self.fake.name())
+            'alternative_name': wrap_metadata_signature(self, self.fake.name()),
+            'IsManager': wrap_metadata_signature(self, self.fake.pybool()),
+            'isDirectorOrAbove': wrap_metadata_signature(self, self.fake.pybool()),
+            'businessTitle': wrap_metadata_signature(self, self.fake.job()),
+            'Entity': wrap_metadata_signature(self, self.fake.company()),
+            'Team': wrap_metadata_signature(self, '{job} ({name})'.format(job=self.fake.job(),
+                                                                          name=self.fake.name())),
+            'Cost_Center': wrap_metadata_signature(self,
+                                                   '{team_id} - {job}'.format(
+                                                       team_id=self.fake.pyint(),
+                                                       job=self.fake.job())),
+            'primary_work_email': wrap_metadata_signature(self, self.fake.email()),
+            'WPRDeskNumber': wrap_metadata_signature(self, self.fake.pyint()),
+            'WorkerType': wrap_metadata_signature(self, random.choice(['Employee',
+                                                                       'Seasonal',
+                                                                       'Geocontractor'])),
+            'PublicEmailAddresses': wrap_metadata_signature(self, self.get_public_email_address()),
+            'EmployeeID': wrap_metadata_signature(self, employee_id)
         }
 
         return obj
