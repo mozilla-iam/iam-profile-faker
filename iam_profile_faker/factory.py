@@ -306,23 +306,23 @@ class IAMFaker(object):
             'uris': self.uris(),
             'phone_numbers': self.phone_numbers(),
             'alternative_name': wrap_metadata_signature(self, self.fake.name()),
-            'IsManager': wrap_metadata_signature(self, self.fake.pybool()),
-            'isDirectorOrAbove': wrap_metadata_signature(self, self.fake.pybool()),
-            'businessTitle': wrap_metadata_signature(self, self.fake.job()),
-            'Entity': wrap_metadata_signature(self, self.fake.company()),
-            'Team': wrap_metadata_signature(self, '{job} ({name})'.format(job=self.fake.job(),
+            'is_manager': wrap_metadata_signature(self, self.fake.pybool()),
+            'is_director_or_above': wrap_metadata_signature(self, self.fake.pybool()),
+            'business_title': wrap_metadata_signature(self, self.fake.job()),
+            'entity': wrap_metadata_signature(self, self.fake.company()),
+            'team': wrap_metadata_signature(self, '{job} ({name})'.format(job=self.fake.job(),
                                                                           name=self.fake.name())),
-            'Cost_Center': wrap_metadata_signature(self,
+            'cost_center': wrap_metadata_signature(self,
                                                    '{team_id} - {job}'.format(
                                                        team_id=self.fake.pyint(),
                                                        job=self.fake.job())),
             'primary_work_email': wrap_metadata_signature(self, self.fake.email()),
-            'WPRDeskNumber': wrap_metadata_signature(self, self.fake.pyint()),
-            'WorkerType': wrap_metadata_signature(self, random.choice(['Employee',
-                                                                       'Seasonal',
-                                                                       'Geocontractor'])),
-            'PublicEmailAddresses': wrap_metadata_signature(self, self.get_public_email_address()),
-            'EmployeeID': wrap_metadata_signature(self, employee_id)
+            'wpr_desk_number': wrap_metadata_signature(self, self.fake.pyint()),
+            'worker_type': wrap_metadata_signature(self, random.choice(['Employee',
+                                                                        'Seasonal',
+                                                                        'Geocontractor'])),
+            'public_email_addresses': wrap_metadata_signature(self, self.get_public_email_address()),
+            'employee_id': wrap_metadata_signature(self, employee_id)
         }
 
         return obj
