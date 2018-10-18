@@ -279,10 +279,12 @@ class IAMFaker(object):
 
         employee_id = (next(self.hierarchy) if self.hierarchy else self.fake.pyint())
 
+        user_id = self.user_id(login_method=login_method)
+        user_id["metadata"]["visibility"] = "public"
         obj = {
             'schema': self.schema(),
             'login_method': login_method,
-            'user_id': self.user_id(login_method=login_method),
+            'user_id': user_id,
             'active': wrap_metadata_signature(self, self.fake.pybool()),
             'last_modified': wrap_metadata_signature(self, last_modified.isoformat()),
             'created': wrap_metadata_signature(self, created.isoformat()),
