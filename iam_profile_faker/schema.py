@@ -221,34 +221,34 @@ class HRISAttributes(graphene.ObjectType):
 
     This is a well-known lists of HRIS attributes.
     """
-    Last_Name = graphene.String(required=True, name='lastName')
-    Preferred_Name = graphene.String(required=True, name='preferredName')
-    PreferredFirstName = graphene.String(required=True, name='preferredFirstName')
-    LegalFirstName = graphene.String(required=True, name='legalFirstName')
-    EmployeeID = graphene.String(required=True, name='employeeId')
-    businessTitle = graphene.String(required=True)
-    IsManager = graphene.Boolean(required=True, name='isManager')
-    isDirectorOrAbove = graphene.Boolean(required=True)
-    Management_Level = graphene.String(required=True, name='managementLevel')
-    HireDate = graphene.DateTime(required=True, name='hireDate')
-    CurrentlyActive = graphene.Boolean(required=True, name='currentlyActive')
-    Entity = graphene.String(required=True, name='entity')
-    Team = graphene.String(required=True, name='team')
-    Cost_Center = graphene.String(required=True, name='costCenter')
-    WorkerType = graphene.String(required=True, name='workerType')
+    Last_Name = graphene.String(name='lastName')
+    Preferred_Name = graphene.String(name='preferredName')
+    PreferredFirstName = graphene.String(name='preferredFirstName')
+    LegalFirstName = graphene.String(name='legalFirstName')
+    EmployeeID = graphene.String(name='employeeId')
+    businessTitle = graphene.String()
+    IsManager = graphene.Boolean(name='isManager')
+    isDirectorOrAbove = graphene.Boolean()
+    Management_Level = graphene.String(name='managementLevel')
+    HireDate = graphene.DateTime(name='hireDate')
+    CurrentlyActive = graphene.Boolean(name='currentlyActive')
+    Entity = graphene.String(name='entity')
+    Team = graphene.String(name='team')
+    Cost_Center = graphene.String(name='costCenter')
+    WorkerType = graphene.String(name='workerType')
     LocationDescription = graphene.String(name='locationDescription')
-    Time_Zone = graphene.String(required=True, name='timeZone')
-    LocationCity = graphene.String(required=True, name='locationCity')
-    LocationState = graphene.String(required=True, name='locationState')
-    LocationCountryFull = graphene.String(required=True, name='locationCountryFull')
-    LocationCountryISO2 = graphene.String(required=True, name='locationCountryIso2')
+    Time_Zone = graphene.String(name='timeZone')
+    LocationCity = graphene.String(name='locationCity')
+    LocationState = graphene.String(name='locationState')
+    LocationCountryFull = graphene.String(name='locationCountryFull')
+    LocationCountryISO2 = graphene.String(name='locationCountryIso2')
     WorkersManager = graphene.String(name='workersManager')
-    WorkersManagerEmployeeID = graphene.String(required=True, name='workersManagerEmployeeId')
+    WorkersManagerEmployeeID = graphene.String(name='workersManagerEmployeeId')
     Worker_s_Manager_s_Email_Address = graphene.String(required=True,
                                                        name='workersManagersEmailAddress')
-    PrimaryWorkEmail = graphene.String(required=True, name='primaryWorkEmail')
+    PrimaryWorkEmail = graphene.String(name='primaryWorkEmail')
     WPRDeskNumber = graphene.String(name='wprDeskNumber')
-    EgenciaPOSCountry = graphene.String(required=True, name='egenciaPosCountry')
+    EgenciaPOSCountry = graphene.String(name='egenciaPosCountry')
     PublicEmailAddresses = graphene.List(PublicEmailAddresses, name='publicEmailAddresses')
 
 
@@ -304,7 +304,7 @@ class Query(graphene.ObjectType):
     """GraphQL Query class for the V2 Profiles."""
 
     profiles = graphene.List(CoreProfile)
-    profile = graphene.Field(CoreProfile, userId=graphene.String(required=True))
+    profile = graphene.Field(CoreProfile, userId=graphene.String())
 
     def resolve_profiles(self, info, **kwargs):
         """GraphQL resolver for the profiles attribute."""
@@ -344,7 +344,7 @@ class EditBasicProfile(graphene.Mutation):
     class Arguments:
         basic_profile_data = BasicProfileInput(required=False)
         # Get the user_id for editing
-        user_id = graphene.String(required=True)
+        user_id = graphene.String()
 
     errors = graphene.List(graphene.String)
     updated_profile = graphene.Field(lambda: CoreProfile)
