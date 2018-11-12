@@ -19,7 +19,8 @@ DISPLAY = [
     'private'
 ]
 
-def wrap_metadata_signature(obj, value, display=DISPLAY, classification=C_GROUP):
+
+def wrap_metadata_signature(obj, value, display=DISPLAY, c12n=C_GROUP):
     """Wrap profile value with metadata/signature"""
 
     # Value key varies based on the type of the value
@@ -30,17 +31,17 @@ def wrap_metadata_signature(obj, value, display=DISPLAY, classification=C_GROUP)
 
     return {
         value_key: value,
-        'metadata': obj.metadata(display, classification),
+        'metadata': obj.metadata(display, c12n),
         'signature': obj.signature()
     }
 
 
-def decorate_metadata_signature(display=DISPLAY, classification=C_GROUP):
+def decorate_metadata_signature(display=DISPLAY, c12n=C_GROUP):
     def wrap(fun):
         """Decorate faker classes to wrap results with metadata/signature."""
         def wrapper(*args, **kwargs):
             value = fun(*args, **kwargs)
-            return wrap_metadata_signature(args[0], value, display, classification)
+            return wrap_metadata_signature(args[0], value, display, c12n)
         return wrapper
     return wrap
 
@@ -69,14 +70,14 @@ class IAMFaker(object):
         """Profile v2 schema faker."""
         return 'https://person-api.sso.mozilla.com/schema/v2/profile'
 
-    def metadata(self, display=DISPLAY, classification=C_GROUP):
+    def metadata(self, display=DISPLAY, c12n=C_GROUP):
         """Generate field metadata"""
 
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
         return {
-            'classification': classification,
+            'classification': c12n,
             'display': random.choice(display),
             'last_modified': last_modified.isoformat(),
             'created': created.isoformat(),
@@ -100,7 +101,7 @@ class IAMFaker(object):
             'additional': [_gen_signature() for i in range(random.randint(0, 5))]
         }
 
-    @decorate_metadata_signature(classification=C_PUBLIC)
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def login_method(self):
         """Profile v2 login_method faker."""
         login_methods = [
@@ -108,7 +109,7 @@ class IAMFaker(object):
         ]
         return random.choice(login_methods)
 
-    @decorate_metadata_signature(classification=C_PUBLIC)
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def user_id(self, login_method=None):
         """Profile v2 user_id attribute faker."""
         user_ids = [
@@ -126,7 +127,7 @@ class IAMFaker(object):
 
         return random.choice(user_ids)
 
-    @decorate_metadata_signature(classification=C_GROUP)
+    @decorate_metadata_signature(c12n=C_GROUP)
     def usernames(self):
         """Profile v2 usernames faker."""
         values = {}
@@ -149,7 +150,7 @@ class IAMFaker(object):
             'firefox_accounts_id': wrap_metadata_signature(self, self.fake.md5()),
         }
 
-    @decorate_metadata_signature(classification=C_PUBLIC)
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def ssh_public_keys(self):
         """Profile v2 public SSH key faker."""
         values = {}
@@ -160,7 +161,7 @@ class IAMFaker(object):
 
         return values
 
-    @decorate_metadata_signature(classification=C_PUBLIC)
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def pgp_public_keys(self):
         """Profile v2 public PGP key faker."""
         values = {}
@@ -175,7 +176,12 @@ class IAMFaker(object):
     def access_information(self):
         """Profile v2 access information faker."""
         values = {}
-        for (publisher, classification) in [('ldap', C_PUBLIC), ('mozilliansorg', C_PUBLIC), ('access_provider', C_GROUP)]:
+        publishers_c12n = [
+            ('ldap', C_PUBLIC),
+            ('mozilliansorg', C_PUBLIC),
+            ('access_provider', C_GROUP)
+        ]
+        for (publisher, c12n) in publishers_c12n:
             v = {}
             for _ in range(random.randint(1, 5)):
                 if publisher == 'mozilliansorg':
@@ -183,9 +189,11 @@ class IAMFaker(object):
                 else:
                     v[self.fake.slug()] = self.fake.pybool()
 
-            values[publisher] = wrap_metadata_signature(self, v, display=[None], classification=classification)
+            values[publisher] = wrap_metadata_signature(
+                self, v, display=[None], c12n=c12n)
 
-        values['hris'] = wrap_metadata_signature(self, self.hris(), display=[None], classification=C_STAFF)
+        values['hris'] = wrap_metadata_signature(
+            self, self.hris(), display=[None], c12n=C_STAFF)
 
         return values
 
@@ -233,15 +241,19 @@ class IAMFaker(object):
     def staff_information(self, hris):
         """ Profile v2 staff information faker"""
         def wrap(value):
-            return wrap_metadata_signature(self, value, display=["ndaed"], classification=C_NDAED)
+            return wrap_metadata_signature(self, value, display=["ndaed"], c12n=C_NDAED)
         return {
             'manager': wrap(hris['IsManager']),
             'director': wrap(hris['isDirectorOrAbove']),
             'staff': wrap(True),
             'title': wrap(hris['businessTitle']),
             'team': wrap(hris['Team']),
-            'cost_center': wrap_metadata_signature(self, hris['Cost_Center'], display=["staff"], classification=C_STAFF),
-            'worker_type': wrap_metadata_signature(self, hris['WorkerType'], display=["staff"], classification=C_STAFF),
+            'cost_center': wrap_metadata_signature(self, hris['Cost_Center'],
+                                                   display=["staff"],
+                                                   c12n=C_STAFF),
+            'worker_type': wrap_metadata_signature(self, hris['WorkerType'],
+                                                   display=["staff"],
+                                                   c12n=C_STAFF),
             'wpr_desk_number': wrap(hris['WPRDeskNumber']),
             'office_location': wrap(hris['Location_Description']),
         }
@@ -299,8 +311,6 @@ class IAMFaker(object):
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
-        employee_id = (next(self.hierarchy) if self.hierarchy else self.fake.pyint())
-
         user_id = self.user_id(login_method=login_method)
         user_id["metadata"]["display"] = "public"
 
@@ -309,20 +319,22 @@ class IAMFaker(object):
             'access_information': access_information,
             'active': wrap_metadata_signature(self, self.fake.pybool(), display=[None]),
             'alternative_name': wrap_metadata_signature(self, self.fake.name()),
-            'created': wrap_metadata_signature(self, created.isoformat(), classification=C_PUBLIC),
+            'created': wrap_metadata_signature(self, created.isoformat(), c12n=C_PUBLIC),
             'description': wrap_metadata_signature(self, self.fake.paragraph()),
-            'first_name': wrap_metadata_signature(self, self.fake.first_name(), classification=C_PUBLIC),
+            'first_name': wrap_metadata_signature(self, self.fake.first_name(), c12n=C_PUBLIC),
             'fun_title': wrap_metadata_signature(self, self.fake.sentence()),
             'identities': self.identities(),
             'languages': self.languages(),
-            'last_modified': wrap_metadata_signature(self, last_modified.isoformat(), classification=C_PUBLIC),
-            'last_name': wrap_metadata_signature(self, self.fake.last_name(), classification=C_PUBLIC),
+            'last_modified': wrap_metadata_signature(self,
+                                                     last_modified.isoformat(),
+                                                     c12n=C_PUBLIC),
+            'last_name': wrap_metadata_signature(self, self.fake.last_name(), c12n=C_PUBLIC),
             'location': wrap_metadata_signature(self, self.fake.country()),
             'login_method': login_method,
             'pgp_public_keys': self.pgp_public_keys(),
             'phone_numbers': self.phone_numbers(),
-            'picture': wrap_metadata_signature(self, self.fake.image_url(), classification=C_PUBLIC),
-            'primary_email': wrap_metadata_signature(self, self.fake.email(), classification=C_PUBLIC),
+            'picture': wrap_metadata_signature(self, self.fake.image_url(), c12n=C_PUBLIC),
+            'primary_email': wrap_metadata_signature(self, self.fake.email(), c12n=C_PUBLIC),
             'pronouns': self.pronouns(),
             'schema': self.schema(),
             'ssh_public_keys': self.ssh_public_keys(),
