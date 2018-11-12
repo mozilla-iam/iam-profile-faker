@@ -4,8 +4,23 @@ import random
 
 from faker import Faker
 
+C_NDAED = 'MOZILLA CONFIDENTIAL'
+C_STAFF = 'WORKGROUP CONFIDENTIAL: STAFF ONLY'
+C_GROUP = 'WORKGROUP CONFIDENTIAL'
+C_PUBLIC = 'PUBLIC'
+C_PRIVATE = 'INDIVIDUAL CONFIDENTIAL'
 
-def wrap_metadata_signature(obj, value):
+DISPLAY = [
+    'public',
+    'authenticated',
+    'vouched',
+    'ndaed',
+    'staff',
+    'private'
+]
+
+
+def wrap_metadata_signature(obj, value, display=DISPLAY, c12n=C_GROUP):
     """Wrap profile value with metadata/signature"""
 
     # Value key varies based on the type of the value
@@ -16,17 +31,19 @@ def wrap_metadata_signature(obj, value):
 
     return {
         value_key: value,
-        'metadata': obj.metadata(),
+        'metadata': obj.metadata(display, c12n),
         'signature': obj.signature()
     }
 
 
-def decorate_metadata_signature(fun):
-    """Decorate faker classes to wrap results with metadata/signature."""
-    def wrapper(*args, **kwargs):
-        value = fun(*args, **kwargs)
-        return wrap_metadata_signature(args[0], value)
-    return wrapper
+def decorate_metadata_signature(display=DISPLAY, c12n=C_GROUP):
+    def wrap(fun):
+        """Decorate faker classes to wrap results with metadata/signature."""
+        def wrapper(*args, **kwargs):
+            value = fun(*args, **kwargs)
+            return wrap_metadata_signature(args[0], value, display, c12n)
+        return wrapper
+    return wrap
 
 
 def create_random_hierarchy_iter():
@@ -53,29 +70,15 @@ class IAMFaker(object):
         """Profile v2 schema faker."""
         return 'https://person-api.sso.mozilla.com/schema/v2/profile'
 
-    def metadata(self):
+    def metadata(self, display=DISPLAY, c12n=C_GROUP):
         """Generate field metadata"""
 
-        classifications = [
-            'MOZILLA CONFIDENTIAL',
-            'WORKGROUP CONFIDENTIAL: STAFF ONLY',
-            'PUBLIC',
-            'INDIVIDUAL CONFIDENTIAL'
-        ]
-        visibility = [
-            'public',
-            'authenticated',
-            'vouched',
-            'ndad',
-            'staff',
-            'private'
-        ]
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
         return {
-            'classification': random.choice(classifications),
-            'visibility': random.choice(visibility),
+            'classification': c12n,
+            'display': random.choice(display),
             'last_modified': last_modified.isoformat(),
             'created': created.isoformat(),
             'verified': self.fake.pybool(),
@@ -98,7 +101,7 @@ class IAMFaker(object):
             'additional': [_gen_signature() for i in range(random.randint(0, 5))]
         }
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def login_method(self):
         """Profile v2 login_method faker."""
         login_methods = [
@@ -106,7 +109,7 @@ class IAMFaker(object):
         ]
         return random.choice(login_methods)
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def user_id(self, login_method=None):
         """Profile v2 user_id attribute faker."""
         user_ids = [
@@ -124,7 +127,7 @@ class IAMFaker(object):
 
         return random.choice(user_ids)
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature(c12n=C_GROUP)
     def usernames(self):
         """Profile v2 usernames faker."""
         values = {}
@@ -133,16 +136,21 @@ class IAMFaker(object):
 
         return values
 
-    @decorate_metadata_signature
     def identities(self):
         """Profile v2 identities faker."""
-        values = {}
-        for _ in range(random.randint(0, 5)):
-            values[self.fake.slug()] = self.fake.uri()
+        return {
+            'github_id_v3': wrap_metadata_signature(self, self.fake.md5()),
+            'github_id_v4': wrap_metadata_signature(self, self.fake.md5()),
+            'dinopark_id': wrap_metadata_signature(self, self.fake.md5()),
+            'mozilliansorg_id': wrap_metadata_signature(self, self.fake.md5()),
+            'bugzilla_mozilla_org_id': wrap_metadata_signature(self, self.fake.md5()),
+            'mozilla_ldap_id': wrap_metadata_signature(self, self.fake.md5(), display=["staff"]),
+            'mozilla_posix_id': wrap_metadata_signature(self, self.fake.md5()),
+            'google_oauth2_id': wrap_metadata_signature(self, self.fake.md5()),
+            'firefox_accounts_id': wrap_metadata_signature(self, self.fake.md5()),
+        }
 
-        return values
-
-    @decorate_metadata_signature
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def ssh_public_keys(self):
         """Profile v2 public SSH key faker."""
         values = {}
@@ -153,7 +161,7 @@ class IAMFaker(object):
 
         return values
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature(c12n=C_PUBLIC)
     def pgp_public_keys(self):
         """Profile v2 public PGP key faker."""
         values = {}
@@ -168,7 +176,12 @@ class IAMFaker(object):
     def access_information(self):
         """Profile v2 access information faker."""
         values = {}
-        for publisher in ['ldap', 'mozilliansorg', 'access_provider']:
+        publishers_c12n = [
+            ('ldap', C_PUBLIC),
+            ('mozilliansorg', C_PUBLIC),
+            ('access_provider', C_GROUP)
+        ]
+        for (publisher, c12n) in publishers_c12n:
             v = {}
             for _ in range(random.randint(1, 5)):
                 if publisher == 'mozilliansorg':
@@ -176,13 +189,14 @@ class IAMFaker(object):
                 else:
                     v[self.fake.slug()] = self.fake.pybool()
 
-            values[publisher] = wrap_metadata_signature(self, v)
+            values[publisher] = wrap_metadata_signature(
+                self, v, display=[None], c12n=c12n)
 
-        values['hris'] = wrap_metadata_signature(self, self.hris())
+        values['hris'] = wrap_metadata_signature(
+            self, self.hris(), display=[None], c12n=C_STAFF)
 
         return values
 
-    @decorate_metadata_signature
     def office_location(self):
         """Profile v2 office location faker."""
         locations = [
@@ -192,8 +206,8 @@ class IAMFaker(object):
 
         return random.choice(locations)
 
-    @decorate_metadata_signature
-    def preferred_languages(self):
+    @decorate_metadata_signature()
+    def languages(self):
         """Profile v2 preferred languages faker."""
         values = []
         for _ in range(random.randint(0, 5)):
@@ -201,12 +215,12 @@ class IAMFaker(object):
 
         return values
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature()
     def pronouns(self):
         """Profile v2 pronouns faker."""
         return random.choice([None, 'he/him', 'she/her', 'they/them'])
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature()
     def uris(self):
         """Profile v2 URIs faker."""
         values = {}
@@ -215,7 +229,7 @@ class IAMFaker(object):
 
         return values
 
-    @decorate_metadata_signature
+    @decorate_metadata_signature()
     def phone_numbers(self):
         """Profile v2 phone_numbers faker."""
         values = {}
@@ -223,6 +237,26 @@ class IAMFaker(object):
             values[self.fake.slug()] = self.fake.phone_number()
 
         return values
+
+    def staff_information(self, hris):
+        """ Profile v2 staff information faker"""
+        def wrap(value):
+            return wrap_metadata_signature(self, value, display=["ndaed"], c12n=C_NDAED)
+        return {
+            'manager': wrap(hris['IsManager']),
+            'director': wrap(hris['isDirectorOrAbove']),
+            'staff': wrap(True),
+            'title': wrap(hris['businessTitle']),
+            'team': wrap(hris['Team']),
+            'cost_center': wrap_metadata_signature(self, hris['Cost_Center'],
+                                                   display=["staff"],
+                                                   c12n=C_STAFF),
+            'worker_type': wrap_metadata_signature(self, hris['WorkerType'],
+                                                   display=["staff"],
+                                                   c12n=C_STAFF),
+            'wpr_desk_number': wrap(hris['WPRDeskNumber']),
+            'office_location': wrap(hris['Location_Description']),
+        }
 
     def hris(self):
         """Profile v2 HRIS faker"""
@@ -264,7 +298,7 @@ class IAMFaker(object):
             'WorkersManagersEmployeeID': manager_id,
             'Worker_s_Manager_s_Email_Address': self.fake.email(),
             'primary_work_email': self.fake.email(),
-            'WPRDeskNumber': self.fake.pyint(),
+            'WPRDeskNumber': str(self.fake.pyint()),
             'EgenciaPOSCountry': self.fake.country_code(),
             'PublicEmailAddresses': self.get_public_email_address()
         }
@@ -277,54 +311,39 @@ class IAMFaker(object):
         created = self.fake.date_time()
         last_modified = self.fake.date_time_between_dates(datetime_start=created)
 
-        employee_id = (next(self.hierarchy) if self.hierarchy else self.fake.pyint())
-
         user_id = self.user_id(login_method=login_method)
-        user_id["metadata"]["visibility"] = "public"
+        user_id["metadata"]["display"] = "public"
+
+        access_information = self.access_information()
         obj = {
-            'schema': self.schema(),
-            'login_method': login_method,
-            'user_id': user_id,
-            'active': wrap_metadata_signature(self, self.fake.pybool()),
-            'last_modified': wrap_metadata_signature(self, last_modified.isoformat()),
-            'created': wrap_metadata_signature(self, created.isoformat()),
-            'usernames': self.usernames(),
-            'first_name': wrap_metadata_signature(self, self.fake.first_name()),
-            'last_name': wrap_metadata_signature(self, self.fake.last_name()),
-            'primary_email': wrap_metadata_signature(self, self.fake.email()),
-            'identities': self.identities(),
-            'ssh_public_keys': self.ssh_public_keys(),
-            'pgp_public_keys': self.pgp_public_keys(),
-            'access_information': self.access_information(),
-            'fun_title': wrap_metadata_signature(self, self.fake.sentence()),
-            'description': wrap_metadata_signature(self, self.fake.paragraph()),
-            'location_preference': wrap_metadata_signature(self, self.fake.country()),
-            'office_location': self.office_location(),
-            'timezone': wrap_metadata_signature(self, self.fake.timezone()),
-            'preferred_languages': self.preferred_languages(),
-            'tags': wrap_metadata_signature(self, self.fake.words()),
-            'pronouns': self.pronouns(),
-            'picture': wrap_metadata_signature(self, self.fake.image_url()),
-            'uris': self.uris(),
-            'phone_numbers': self.phone_numbers(),
+            'access_information': access_information,
+            'active': wrap_metadata_signature(self, self.fake.pybool(), display=[None]),
             'alternative_name': wrap_metadata_signature(self, self.fake.name()),
-            'is_manager': wrap_metadata_signature(self, self.fake.pybool()),
-            'is_director_or_above': wrap_metadata_signature(self, self.fake.pybool()),
-            'business_title': wrap_metadata_signature(self, self.fake.job()),
-            'entity': wrap_metadata_signature(self, self.fake.company()),
-            'team': wrap_metadata_signature(self, '{job} ({name})'.format(job=self.fake.job(),
-                                                                          name=self.fake.name())),
-            'cost_center': wrap_metadata_signature(self,
-                                                   '{team_id} - {job}'.format(
-                                                       team_id=self.fake.pyint(),
-                                                       job=self.fake.job())),
-            'primary_work_email': wrap_metadata_signature(self, self.fake.email()),
-            'wpr_desk_number': wrap_metadata_signature(self, self.fake.pyint()),
-            'worker_type': wrap_metadata_signature(self, random.choice(['Employee',
-                                                                        'Seasonal',
-                                                                        'Geocontractor'])),
-            'public_email_addresses': wrap_metadata_signature(self, self.get_public_email_address()),
-            'employee_id': wrap_metadata_signature(self, employee_id)
+            'created': wrap_metadata_signature(self, created.isoformat(), c12n=C_PUBLIC),
+            'description': wrap_metadata_signature(self, self.fake.paragraph()),
+            'first_name': wrap_metadata_signature(self, self.fake.first_name(), c12n=C_PUBLIC),
+            'fun_title': wrap_metadata_signature(self, self.fake.sentence()),
+            'identities': self.identities(),
+            'languages': self.languages(),
+            'last_modified': wrap_metadata_signature(self,
+                                                     last_modified.isoformat(),
+                                                     c12n=C_PUBLIC),
+            'last_name': wrap_metadata_signature(self, self.fake.last_name(), c12n=C_PUBLIC),
+            'location': wrap_metadata_signature(self, self.fake.country()),
+            'login_method': login_method,
+            'pgp_public_keys': self.pgp_public_keys(),
+            'phone_numbers': self.phone_numbers(),
+            'picture': wrap_metadata_signature(self, self.fake.image_url(), c12n=C_PUBLIC),
+            'primary_email': wrap_metadata_signature(self, self.fake.email(), c12n=C_PUBLIC),
+            'pronouns': self.pronouns(),
+            'schema': self.schema(),
+            'ssh_public_keys': self.ssh_public_keys(),
+            'staff_information': self.staff_information(access_information['hris']['values']),
+            'tags': wrap_metadata_signature(self, self.fake.words()),
+            'timezone': wrap_metadata_signature(self, self.fake.timezone()),
+            'uris': self.uris(),
+            'user_id': user_id,
+            'usernames': self.usernames(),
         }
 
         return obj

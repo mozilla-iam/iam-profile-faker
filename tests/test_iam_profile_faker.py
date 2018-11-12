@@ -43,7 +43,7 @@ class TestIAMProfileFaker(unittest.TestCase):
         assert create_result.output == '{"foo": "bar"}\n'
 
     @mock.patch('iam_profile_faker.factory.IAMFaker.create')
-    def test_003_command_line_interface_create(self, mock_create):
+    def test_003_command_line_interface_create_batch(self, mock_create):
         """Test create cli."""
         runner = CliRunner()
         mock_create.return_value = {'foo': 'bar'}
@@ -56,7 +56,7 @@ class TestE2EProfileFaker(unittest.TestCase):
     """E2E tests for `iam_profile_faker` package."""
 
     def setUp(self):
-        schema_url = 'https://raw.githubusercontent.com/mozilla-iam/cis/profilev2/docs/profile_data/profile.schema'  # noqa
+        schema_url = 'https://raw.githubusercontent.com/mozilla-iam/cis/profilev2/python-modules/cis_profile/cis_profile/data/profile.schema'  # noqa
         try:
             self.schema = requests.get(schema_url).json()
         except requests.exceptions.ConnectionError:

@@ -3,12 +3,9 @@ from tinydb import TinyDB
 
 from flask import Flask
 from flask_cors import CORS
-from flask_graphql import GraphQLView
 from flask_restful import Resource, Api
-from graphene import Schema
 
 from iam_profile_faker import V2ProfileFactory
-from iam_profile_faker.schema import Query, ProfileMutations
 
 
 app = Flask(__name__)
@@ -62,18 +59,10 @@ class PersistentUser(Resource):
         return None
 
 
-view_func = GraphQLView.as_view(
-    'graphql',
-    schema=Schema(query=Query, mutation=ProfileMutations),
-    graphiql=True
-)
-
-
 api.add_resource(RandomUsers, '/', '/users')
 api.add_resource(RandomUser, '/user')
 api.add_resource(PersistentUsers, '/persistent/users')
 api.add_resource(PersistentUser, '/persistent/user/<string:user_id>')
-app.add_url_rule('/graphql', view_func=view_func)
 
 
 def main():
