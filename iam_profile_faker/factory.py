@@ -131,6 +131,7 @@ class IAMFaker(object):
     def usernames(self):
         """Profile v2 usernames faker."""
         values = {}
+        values["mozilliansorg"] = self.fake.user_name()
         for _ in range(random.randint(0, 5)):
             values[self.fake.slug()] = self.fake.user_name()
 
@@ -141,7 +142,7 @@ class IAMFaker(object):
         return {
             'github_id_v3': wrap_metadata_signature(self, self.fake.md5()),
             'github_id_v4': wrap_metadata_signature(self, self.fake.md5()),
-            'dinopark_id': wrap_metadata_signature(self, self.fake.md5()),
+            'dinopark_id': wrap_metadata_signature(self, self.fake.md5(), display=["public"]),
             'mozilliansorg_id': wrap_metadata_signature(self, self.fake.md5()),
             'bugzilla_mozilla_org_id': wrap_metadata_signature(self, self.fake.md5()),
             'mozilla_ldap_id': wrap_metadata_signature(self, self.fake.md5(), display=["staff"]),
@@ -223,8 +224,42 @@ class IAMFaker(object):
     @decorate_metadata_signature()
     def uris(self):
         """Profile v2 URIs faker."""
+
+        # external accounts supported by DinoPark, prefixed with EA#
+        external_accounts = [
+            "EA#AIM",
+            "EA#BITBUCKET",
+            "EA#BMO",
+            "EA#DISCORD",
+            "EA#FACEBOOK",
+            "EA#LANYRD",
+            "EA#LINKEDIN",
+            "EA#MDN",
+            "EA#MASTODON",
+            "EA#AMO",
+            "EA#DISCOURSE",
+            "EA#MOZPHAB",
+            "EA#MOZILLAPONTOON",
+            "EA#REMO",
+            "EA#SUMO",
+            "EA#WEBMAKER",
+            "EA#MOZILLAWIKI",
+            "EA#Phone",
+            "EA#Phone",
+            "EA#SKYPE",
+            "EA#SLIDESHARE",
+            "EA#TELEGRAM",
+            "EA#TRANSIFEX",
+            "EA#TWITTER",
+            "EA#WEBSITE",
+            "EA#JABBER",
+            "EA#YAHOO",
+        ]
+
         values = {}
-        for _ in range(random.randint(0, 5)):
+        for name in random.sample(external_accounts, random.randint(0, 4)):
+            values[name] = self.fake.uri()
+        for _ in range(random.randint(0, 4)):
             values[self.fake.slug()] = self.fake.uri()
 
         return values
@@ -333,7 +368,7 @@ class IAMFaker(object):
             'login_method': login_method,
             'pgp_public_keys': self.pgp_public_keys(),
             'phone_numbers': self.phone_numbers(),
-            'picture': wrap_metadata_signature(self, self.fake.image_url(), c12n=C_PUBLIC),
+            'picture': wrap_metadata_signature(self, None, c12n=C_PUBLIC),
             'primary_email': wrap_metadata_signature(self, self.fake.email(), c12n=C_PUBLIC),
             'pronouns': self.pronouns(),
             'schema': self.schema(),
