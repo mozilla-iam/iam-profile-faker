@@ -127,7 +127,7 @@ class IAMFaker(object):
 
         return random.choice(user_ids)
 
-    @decorate_metadata_signature(c12n=C_GROUP)
+    @decorate_metadata_signature(display=["public"], c12n=C_GROUP)
     def usernames(self):
         """Profile v2 usernames faker."""
         values = {}
