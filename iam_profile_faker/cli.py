@@ -59,9 +59,29 @@ def populate_db(count, dbname):
     click.echo('Added {0} profiles in database {1}.'.format(count, dbname))
 
 
+@click.command()
+@click.option('--count', type=int, default=100,
+              help='Number of v2 profile objects to create in the db.')
+@click.argument('filename', default='export')
+def export_json(count, filename):
+    """Create batch IAM profile v2 objects and insert them in the database."""
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    if not filename.endswith('.json'):
+        filename = '{0}.json'.format(filename)
+
+    click.echo('Creating file {0}'.format(filename))
+    users = V2ProfileFactory().create_batch(count, export_json=True)
+    with open(os.path.join(path, filename), 'w') as f:
+        f.write(users)
+
+    click.echo('Added {0} profiles into file {1}.'.format(count, filename))
+
+
 main.add_command(create)
 main.add_command(create_batch)
 main.add_command(populate_db)
+main.add_command(export_json)
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
